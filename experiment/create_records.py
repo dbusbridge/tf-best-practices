@@ -6,83 +6,79 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-from tensorflow.contrib.learn.python.learn.datasets import mnist
+from sklearn.model_selection import train_test_split
+
+import experiment as ex
+
 
 # Config
 FLAGS = tf.app.flags.FLAGS
 
 
 # Data parameters
-tf.app.flags.DEFINE_string(
-  'hyperparameters_path',
-  'alignment/models/configurations/single_layer.json',
-  'The path to the hyperparameters.')
+tf.app.flags.DEFINE_string('output_dir', '/tmp/output_records',
+                           'The path to output the records to.')
+
+tf.app.flags.DEFINE_float('validation_fraction', 0.33,
+                          'The fraction of the data set to use for validation.')
+
+tf.app.flags.DEFINE_integer('train_shards', 3,
+                            'Number of shards for the training set.')
+
+tf.app.flags.DEFINE_integer('valid_shards', 2,
+                            'Number of shards for the validation set.')
+
+# Globals
+tf.app.flags.DEFINE_integer('random_seed', 1234,
+                            'The extremely random seed.')
+
+# Set the random seeds
+tf.set_random_seed(FLAGS.random_seed)
+np.random.seed(FLAGS.random_seed)
+
+# Logging verbosity to INFO
+tf.logging.set_verbosity(tf.logging.INFO)
 
 
-def _int64_feature(value):
-  return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
+def _float_feature(value):
+  """Helper for creating a FloatList Feature."""
+  return tf.train.Feature(float_list=tf.train.FloatList(value=[value]))
 
 
-def _bytes_feature(value):
-  return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
+def _get_serialized_example(x, y):
+  """Helper for creating a serialized Example proto."""
+  example = tf.train.Example(
+    features=tf.train.Features(
+      feature={
+        'x': _float_feature(x),
+        'y': _float_feature(y)}))
 
-
-def convert_to(data_set, name):
-  """Converts a dataset to tfrecords."""
-  images = data_set.images
-  labels = data_set.labels
-  num_examples = data_set.num_examples
-
-  if images.shape[0] != num_examples:
-    raise ValueError('Images size %d does not match label size %d.' %
-                     (images.shape[0], num_examples))
-  rows = images.shape[1]
-  cols = images.shape[2]
-  depth = images.shape[3]
-
-  filename = os.path.join(FLAGS.directory, name + '.tfrecords')
-  print('Writing', filename)
-  with tf.python_io.TFRecordWriter(filename) as writer:
-    for index in range(num_examples):
-      image_raw = images[index].tostring()
-      example = tf.train.Example(features=tf.train.Features(feature={
-          'height': _int64_feature(rows),
-          'width': _int64_feature(cols),
-          'depth': _int64_feature(depth),
-          'label': _int64_feature(int(labels[index])),
-          'image_raw': _bytes_feature(image_raw)}))
-      writer.write(example.SerializeToString())
+  return example.SerializeToString()
 
 
 def main(unused_argv):
   # Get the data.
-  data_sets = mnist.read_data_sets(FLAGS.directory,
-                                   dtype=tf.uint8,
-                                   reshape=False,
-                                   validation_size=FLAGS.validation_size)
+  x, y = ex.get_data()
 
-  # Convert to Examples and write the result to TFRecords.
-  convert_to(data_sets.train, 'train')
-  convert_to(data_sets.validation, 'validation')
-  convert_to(data_sets.test, 'test')
+  # Split into training and validation.
+  x_train, x_valid, y_train, y_valid = train_test_split(
+    x, y, test_size=FLAGS.validation_fraction)
+
+  data_sets = {'train': zip(x_train, y_train), 'valid': zip(x_valid, y_valid)}
+
+  shards = {'train': FLAGS.train_shards, 'valid': FLAGS.valid_shards}
+
+  data_sets_serialised = {name: [_get_serialized_example(x, y)
+                                 for x, y in dataset]
+                          for name, dataset in data_sets.items()}
+
+  # Write out to TFRecords.
+  for name, dataset in data_sets_serialised.items():
+    ex.write_dataset(output_dir=FLAGS.output_dir,
+                     name=name, dataset=dataset, num_shards=shards[name])
+
+  tf.logging.info("Finished writing datasets.")
 
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser()
-  parser.add_argument(
-      '--directory',
-      type=str,
-      default='/tmp/data',
-      help='Directory to download data files and write the converted result'
-  )
-  parser.add_argument(
-      '--validation_size',
-      type=int,
-      default=5000,
-      help="""\
-      Number of examples to separate from the training data for the validation
-      set.\
-      """
-  )
-  FLAGS, unparsed = parser.parse_known_args()
-  tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
+  tf.app.run(main=main)
