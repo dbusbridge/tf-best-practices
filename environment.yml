@@ -1,0 +1,13 @@
+name: env_tf_best_practices
+dependencies:
+  - python>=3.6.2
+  # Analysis
+  - matplotlib
+  # Calculations
+  - numpy
+  - scikit-learn
+  # Packages
+  - pip
+  - pip:
+    - tensorflow==1.4.0
+    - "--editable=."
