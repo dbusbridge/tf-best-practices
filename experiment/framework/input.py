@@ -15,7 +15,7 @@ def _parser(record):
   return tf.parse_single_example(record, keys_to_features)
 
 
-def dataset_input_fn(data_dir, batch_size, epochs, shuffle=True, name="data"):
+def get_input_fn(data_dir, batch_size, epochs, shuffle=True, name="data"):
   """Build the input function from the .tfrecords files in a directory.
 
   :param str data_dir: The directory containing the TFRecords files. These must
@@ -29,23 +29,28 @@ def dataset_input_fn(data_dir, batch_size, epochs, shuffle=True, name="data"):
     generator.
   :rtype: tuple(tf.Tensor, tf.Tensor).
   """
-  with tf.name_scope(name):
-    filenames = [os.path.join(data_dir, x)
-                 for x in os.listdir(path=data_dir)
-                 if x.endswith(".tfrecords")]
-    dataset = tf.data.TFRecordDataset(filenames)
+  def input_fn():
+    with tf.name_scope(name):
+      filenames = [os.path.join(data_dir, x)
+                   for x in os.listdir(path=data_dir)
+                   if x.endswith(".tfrecords")]
+      dataset = tf.data.TFRecordDataset(filenames)
 
-    # Use `Dataset.map()` to build a pair of a feature dictionary and a label
-    # tensor for each example.
-    dataset = dataset.map(_parser)
+      # Use `Dataset.map()` to build a pair of a feature dictionary and a label
+      # tensor for each example.
+      dataset = dataset.map(_parser)
 
-    if shuffle:
-      dataset = dataset.shuffle(buffer_size=10000)
-    dataset = dataset.batch(batch_size)
-    dataset = dataset.repeat(epochs)
-    iterator = dataset.make_one_shot_iterator()
-    next_examples = iterator.get_next()
+      if shuffle:
+        dataset = dataset.shuffle(buffer_size=10000)
+      dataset = dataset.batch(batch_size)
+      dataset = dataset.repeat(epochs)
+      iterator = dataset.make_one_shot_iterator()
+      next_examples = iterator.get_next()
 
-    x, y = next_examples['x'], next_examples['y']
+      x, y = next_examples['x'], next_examples['y']
 
-    return x, y
+      # Make them batches
+      x, y = tf.expand_dims(x, axis=-1), tf.expand_dims(y, axis=-1)
+
+      return x, y
+  return input_fn
