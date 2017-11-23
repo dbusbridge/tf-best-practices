@@ -33,7 +33,6 @@ def build_variable_summaries(gradients=False, loss=None):
     assert loss is not None, (
       "If gradient summaries are required, you must specify a loss.")
 
-  if gradients:
     gradients = tf.gradients(loss, trainable_variables)
     for grad, var in list(zip(gradients, trainable_variables)):
       _variable_summary(grad)
