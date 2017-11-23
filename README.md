@@ -16,11 +16,11 @@ tasks. For each of these tasks, however, one needs:
 To avoid the substantial engineering challenge of implementing all of these 
 components each time you want to train a cool new model, TensorFlow now includes
 the 
-[Estimator](https://www.tensorflow.org/api_docs/python/tf/estimator) 
+[Estimator](https://www.tensorflow.org/api_docs/python/tf/estimator)
 
 ![estimator](images/estimator.png)
 
-(Image taken from https://arxiv.org/abs/1708.02637)
+(Architecture for `Estimator` training, image taken from https://arxiv.org/abs/1708.02637)
 
 and [Experiments](https://www.tensorflow.org/api_docs/python/tf/contrib/learn/Experiment)
 API. On top of this, to help with the input pipeline, the 
@@ -43,11 +43,6 @@ training and validation loop, building a distinct `Estimator` instance for each
 loop. Data is read from the `data_dir`. The model is saved in a `model_dir`.
 + `experiment/scripts/infer.py` Reloads the `Estimator` from the `model_dir` and
 creates a plot of the predictions on the training and validation set.
-
-![experiment](images/experiment.png)
-
-Image taken from https://arxiv.org/abs/1708.02637
-
 
 ## References
 
