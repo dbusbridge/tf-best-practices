@@ -7,11 +7,12 @@ import tensorflow as tf
 # protocol buffer, and perform any additional per-record preprocessing.
 def _parser(record):
   """Parser for TFRecord."""
+  # Specify the size of the data as one dimensional
   keys_to_features = {
-    "x": tf.FixedLenFeature((), tf.float32,
-                            default_value=tf.zeros([], dtype=tf.float32)),
-    "y": tf.FixedLenFeature((), tf.float32,
-                            default_value=tf.zeros([], dtype=tf.float32))}
+    "x": tf.FixedLenFeature([1], tf.float32,
+                            default_value=tf.zeros([1], dtype=tf.float32)),
+    "y": tf.FixedLenFeature([1], tf.float32,
+                            default_value=tf.zeros([1], dtype=tf.float32))}
   return tf.parse_single_example(record, keys_to_features)
 
 
@@ -45,12 +46,8 @@ def get_input_fn(data_dir, batch_size, epochs, shuffle=True, name="data"):
       dataset = dataset.batch(batch_size)
       dataset = dataset.repeat(epochs)
       iterator = dataset.make_one_shot_iterator()
-      next_examples = iterator.get_next()
+      next_features = iterator.get_next()
 
-      x, y = next_examples['x'], next_examples['y']
-
-      # Make them batches
-      x, y = tf.expand_dims(x, axis=-1), tf.expand_dims(y, axis=-1)
-
-      return x, y
+      # Return tuple of features and labels. Here, `y` is our label
+      return next_features, next_features['y']
   return input_fn

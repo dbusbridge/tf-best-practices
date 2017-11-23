@@ -43,7 +43,7 @@ tf.app.flags.DEFINE_integer('shuffle', True,
 
 
 # Evaluation
-tf.app.flags.DEFINE_integer('min_eval_frequency', 128,
+tf.app.flags.DEFINE_integer('min_eval_frequency', 1024,
                             'Frequency to do evaluation run.')
 
 
