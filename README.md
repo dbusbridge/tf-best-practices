@@ -50,6 +50,20 @@ creates a plot of the predictions on the training and validation set.
 
 + Great introductory post by Peter Roelants [Higher-Level APIs in TensorFlow](https://medium.com/onfido-tech/higher-level-apis-in-tensorflow-67bfb602e6c0).
 
+### Documentation
+
+#### API
+
++ [Estimator](https://www.tensorflow.org/api_docs/python/tf/estimator)
++ [Experiments](https://www.tensorflow.org/api_docs/python/tf/contrib/learn/Experiment)
++ [Dataset](https://www.tensorflow.org/api_docs/python/tf/data/Dataset)
+
+#### Guides
+
++ [Building an input function](https://www.tensorflow.org/get_started/input_fn)
++ [Estimator quickstart](https://www.tensorflow.org/get_started/estimator)
++ [Creating an Estimator](https://www.tensorflow.org/extend/estimators)
+
 ### Papers
 
 + Cheng, H.-T. et al. (2017). 
