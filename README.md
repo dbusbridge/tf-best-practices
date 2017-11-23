@@ -22,5 +22,5 @@ Image taken from https://arxiv.org/abs/1708.02637
 
 + Cheng, H.-T. et al. (2017). 
 TensorFlow Estimators: Managing Simplicity vs. Flexibility in High-Level Machine Learning Frameworks. 
- + DOI: https://doi.org/10.1145/3097983.3098171 
- + arXiv: http://arxiv.org/abs/1708.02637
+  + DOI: https://doi.org/10.1145/3097983.3098171 
+  + arXiv: http://arxiv.org/abs/1708.02637
