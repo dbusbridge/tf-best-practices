@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import tensorflow as tf
 
 
@@ -16,7 +17,7 @@ def _parser(record):
   return tf.parse_single_example(record, keys_to_features)
 
 
-def get_input_fn(data_dir, batch_size, epochs, shuffle=True, name="data"):
+def get_input_fn(data_dir, batch_size, epochs=1, shuffle=False, name="data"):
   """Build the input function from the .tfrecords files in a directory.
 
   :param str data_dir: The directory containing the TFRecords files. These must

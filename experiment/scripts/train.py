@@ -32,10 +32,10 @@ tf.app.flags.DEFINE_boolean('clean_model_dir', True,
 tf.app.flags.DEFINE_float('learning_rate', 1.e-2,
                           'The learning rate.')
 
-tf.app.flags.DEFINE_integer('batch_size', 64,
+tf.app.flags.DEFINE_integer('batch_size', 1024,
                             'The batch size.')
 
-tf.app.flags.DEFINE_integer('epochs', 1000,
+tf.app.flags.DEFINE_integer('epochs', 1024,
                             'Number of epochs to train for.')
 
 tf.app.flags.DEFINE_integer('shuffle', True,
@@ -68,6 +68,7 @@ def run_experiment(unused_argv):
   # Build the hyperparameters object
   params = HParams(**hyperparameters_dict)
 
+  # Set the seeds
   np.random.seed(params.random_seed)
   tf.set_random_seed(params.random_seed)
 

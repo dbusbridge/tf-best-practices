@@ -21,14 +21,19 @@ def model_fn(features, labels, mode, params):
   # Apply model architecture to the features.
   logits = _layers(features['x'], training=training)
 
-  # Build the regressionhead
-  head = tf.contrib.estimator.regression_head(name='regression_head')
-
   # If mode is inference, return the predictions
   if mode == ModeKeys.INFER:
-    return head.create_estimator_spec(
-      features=features, mode=mode,
-      logits=logits, labels=labels)
+    predictions = {'y_pred': logits}
+
+    # Add features to the predictions for easy later analysis
+    predictions.update(features)
+
+    return tf.estimator.EstimatorSpec(
+      mode=mode,
+      predictions=predictions)
+
+  # Build the regression head
+  head = tf.contrib.estimator.regression_head(name='regression_head')
 
   # Calculate the loss, training and metric ops
   loss = tf.losses.mean_squared_error(
@@ -58,9 +63,12 @@ def _layers(inputs, training, name='mlp'):
   """
   with tf.variable_scope(name):
     net = tf.layers.dense(
-      inputs=inputs, units=10, activation=tf.nn.relu, name='dense_1')
-    net = tf.layers.dropout(inputs=net, training=training, name='dropout_1')
-    net = tf.layers.dense(inputs=net, units=1, name='dense_2')
+      inputs=inputs, units=100, activation=tf.nn.relu, name='dense_1')
+    # net = tf.layers.dropout(inputs=net, training=training, name='dropout_1')
+    net = tf.layers.dense(
+      inputs=net, units=100, activation=tf.nn.relu, name='dense_2')
+    # net = tf.layers.dropout(inputs=net, training=training, name='dropout_2')
+    net = tf.layers.dense(inputs=net, units=1, name='dense_3')
 
   return net
 
@@ -84,3 +92,18 @@ def _get_train_op_fn(params):
       learning_rate=params.learning_rate)
 
   return train_op_fn
+
+
+def _get_eval_metric_ops(labels, predictions):
+  """Get a dict of the evaluation Ops.
+
+  :param tf.Tensor labels: Labels tensor for training and evaluation.
+  :param tf.Tensor predictions: Predictions Tensor.
+  :return: Dict of metric results keyed by name.
+  :rtype: dict.
+   """
+  return {
+    'Mean squared error': tf.metrics.mean_squared_error(
+      labels=labels,
+      predictions=predictions,
+      name='mse')}
