@@ -13,19 +13,36 @@ tasks. For each of these tasks, however, one needs:
 + Metrics
 + ...hundreds of other things but I think the point is clear.
 
-Implementing and training a machine learning model requires substantial 
-engineering effort which typically rests on the model designer. It is often 
-(read: always) a challenge, and slightly mind-numbing, to implement each of the 
-above components every time you want to just train a model. In addition, it is 
-empirically almost impossible to do this in a bug-free manner for even 
-moderately complex models.
-
-
+To avoid the substantial engineering challenge of implementing all of these 
+components each time you want to train a cool new model, TensorFlow now includes
+the 
+[Estimator](https://www.tensorflow.org/api_docs/python/tf/estimator) 
 
 ![estimator](images/estimator.png)
 
-Image taken from https://arxiv.org/abs/1708.02637
+(Image taken from https://arxiv.org/abs/1708.02637)
 
+and [Experiments](https://www.tensorflow.org/api_docs/python/tf/contrib/learn/Experiment)
+API. On top of this, to help with the input pipeline, the 
+[Dataset](https://www.tensorflow.org/api_docs/python/tf/data/Dataset) has also 
+now exists.
+
+This repository aims to provide a clear template on how to use each of these 
+ideas in tandem to create a clean, efficient training and evaluation setup. 
+
+## Code
+
+The code contains the following scripts to be run in order:
+
++ `experiment/scripts/create_records.py` Creates `x, y` examples of a biased sin 
+function with noise. It saves these in a `data_dir`  as sharded `.tfrecords` 
+files. Folder for training and validation shards to ensure data separation from 
+the start.
++ `experiment/scripts/train.py` Launches an `Experiment`, initialising the 
+training and validation loop, building a distinct `Estimator` instance for each 
+loop. Data is read from the `data_dir`. The model is saved in a `model_dir`.
++ `experiment/scripts/infer.py` Reloads the `Estimator` from the `model_dir` and
+creates a plot of the predictions on the training and validation set.
 
 ![experiment](images/experiment.png)
 
